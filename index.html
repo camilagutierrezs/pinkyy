@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reloj Analógico Acelerado - Pink Theme</title>
+  <!-- Librería p5.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #fce7f3; /* Rosa claro de fondo */
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #831843;
+      overflow: hidden;
+    }
+    #controls {
+      position: absolute;
+      top: 25px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 12px 24px;
+      border-radius: 30px;
+      border: 2px solid #f472b6;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.15);
+    }
+    label {
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #be185d;
+    }
+    input[type=range] {
+      cursor: pointer;
+      accent-color: #ec4899;
+    }
+    #speedVal {
+      font-weight: bold;
+      color: #db2777;
+      min-width: 45px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  <label for="speedSlider">Velocidad:</label>
+  <input type="range" id="speedSlider" min="1" max="600" value="180" step="1">
+  <span id="speedVal">180x</span>
+</div>
+
+<script>
+let angleSec = 0;
+let angleMin = 0;
+let angleHour = 0;
+
+let slider;
+let speedLabel;
+
+function setup() {
+  createCanvas(600, 600);
+  angleMode(RADIANS);
+  
+  slider = document.getElementById('speedSlider');
+  speedLabel = document.getElementById('speedVal');
+  
+  // Sincronización inicial con la hora real local
+  let h = hour() % 12;
+  let m = minute();
+  let s = second();
+
+  angleSec = map(s, 0, 60, 0, TWO_PI);
+  angleMin = map(m + s / 60, 0, 60, 0, TWO_PI);
+  angleHour = map(h + m / 60 + s / 3600, 0, 12, 0, TWO_PI);
+}
+
+function draw() {
+  background('#fce7f3'); // Fondo de pantalla en rosa suave
+  
+  let speedFactor = parseFloat(slider.value);
+  speedLabel.innerText = speedFactor + 'x';
+  
+  let dt = deltaTime / 1000;
+  
+  // Velocidades angulares proporcionales (vr3, vr2, vr1)
+  let vr3 = (TWO_PI / 60) * speedFactor;          // Segundero
+  let vr2 = (TWO_PI / 3600) * speedFactor;        // Minutero
+  let vr1 = (TWO_PI / 43200) * speedFactor;       // Horario
