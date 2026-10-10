@@ -7,6 +7,9 @@
   <!-- Librería p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
@@ -15,23 +18,21 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-color: #fce7f3; /* Rosa claro de fondo */
+      background-color: #fce7f3; /* Fondo rosa pastel claro */
       font-family: system-ui, -apple-system, sans-serif;
       color: #831843;
-      overflow: hidden;
     }
     #controls {
-      position: absolute;
-      top: 25px;
-      background: rgba(255, 255, 255, 0.85);
+      margin-bottom: 20px;
+      background: #ffffff;
       padding: 12px 24px;
       border-radius: 30px;
       border: 2px solid #f472b6;
       display: flex;
       align-items: center;
       gap: 15px;
-      backdrop-filter: blur(8px);
       box-shadow: 0 4px 15px rgba(236, 72, 153, 0.15);
+      z-index: 10;
     }
     label {
       font-size: 14px;
@@ -49,6 +50,11 @@
       color: #db2777;
       min-width: 45px;
     }
+    #canvas-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
@@ -59,6 +65,8 @@
   <span id="speedVal">180x</span>
 </div>
 
+<div id="canvas-container"></div>
+
 <script>
 let angleSec = 0;
 let angleMin = 0;
@@ -68,13 +76,15 @@ let slider;
 let speedLabel;
 
 function setup() {
-  createCanvas(600, 600);
+  // Crear el lienzo e insertarlo en el contenedor HTML
+  let canvas = createCanvas(500, 500);
+  canvas.parent('canvas-container');
   angleMode(RADIANS);
   
   slider = document.getElementById('speedSlider');
   speedLabel = document.getElementById('speedVal');
   
-  // Sincronización inicial con la hora real local
+  // Sincronizar ángulos iniciales con la hora local real
   let h = hour() % 12;
   let m = minute();
   let s = second();
@@ -85,7 +95,7 @@ function setup() {
 }
 
 function draw() {
-  background('#fce7f3'); // Fondo de pantalla en rosa suave
+  clear(); // Mantiene el fondo limpio en cada render
   
   let speedFactor = parseFloat(slider.value);
   speedLabel.innerText = speedFactor + 'x';
@@ -96,3 +106,34 @@ function draw() {
   let vr3 = (TWO_PI / 60) * speedFactor;          // Segundero
   let vr2 = (TWO_PI / 3600) * speedFactor;        // Minutero
   let vr1 = (TWO_PI / 43200) * speedFactor;       // Horario
+
+  // Actualizar ángulos
+  angleSec += vr3 * dt;
+  angleMin += vr2 * dt;
+  angleHour += vr1 * dt;
+
+  translate(width / 2, height / 2);
+
+  // --- 1. ESFERA Y MARCO EN TONOS ROSA ---
+  // Resplandor exterior
+  noFill();
+  stroke(244, 114, 182, 60);
+  strokeWeight(16);
+  ellipse(0, 0, 420, 420);
+
+  // Marco exterior (Rosa chicle)
+  fill('#f472b6');
+  stroke('#db2777');
+  strokeWeight(5);
+  ellipse(0, 0, 390, 390);
+
+  // Esfera central (Rosa pastel)
+  fill('#fbcfe8');
+  stroke('#f472b6');
+  strokeWeight(3);
+  ellipse(0, 0, 370, 370);
+
+  // --- 2. MARCAS DEL RELOJ ---
+  for (let i = 0; i < 60; i++) {
+    let angle = map(i, 0, 60, 0, TWO_PI);
+    let x1 = cos(angle) * 16
